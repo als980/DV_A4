@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <style>
+        svg circle {
+          //fill:( function(d) {if (d.cnt > 1) {return "red"} else {return "#69b5a2"}});
+          opacity: 0.6;
+          stroke: white;
+        }
+        svg circle:hover {
+          fill: red;
+          stroke: #333;
+        }
+        svg text {
+          pointer-events: none;
+        }
+        svg .municipality {
+          //fill: #efefef;
+          stroke: #fff;
+        }
+        svg .municipality-label {
+          fill: #bbb;
+          font-size: 12px;
+          font-weight: 300;
+          text-anchor: middle;
+        }
+        svg #map text {
+          color: #333;
+          font-size: 10px;
+          text-anchor: middle;
+        }
+        svg #places text {
+          color: #777;
+          font: 10px sans-serif;
+          text-anchor: start;
+        }
+
+        #title {
+            font-family: sans-serif;
+        }
+        #title p {
+            font-size: 10pt;
+        }
+    </style>
+  </head>
+  <body>
+    <h2>과제4 18011745학번 김선민</h2>
+    <br>
+    <h3>사상자 수 교통사고<h3/>
+    <div id="map"></div>
+
+
+    <h3>차대사람 교통사고</h3>
+    <div id="map1"></div>
+    <script src="http://d3js.org/d3.v3.js"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+    <script>
+    var width = 800,
+        height = 700;
+/////////////////////////////////////////
+
+/*const zoomed = () =>{
+          map.attr('transform', d3.event.transform)
+          icons.attr('transform', d3.event.transform)
+        }
+        const zoom = d3.zoom().scaleExtent([1, 8]).on('zoom', zoomed)
+        svg.call(zoom)*/
+
+//////////////////////////////////
+    var svg = d3.select("#map").append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+
+
+    var map = svg.append("g").attr("id", "map"),
+        places = svg.append("g").attr("id", "places");
+
+    var projection = d3.geo.mercator()
+        .center([126.98, 37.56])
+        .scale(100000)
+        .translate([width/2, height/2]);
+
+    var path = d3.geo.path().projection(projection);
+
+    d3.json("data/seoul.json", function(error, data) {
+      var features = topojson.feature(data, data.objects.seoul_municipalities_geo).features;
+      map.selectAll('path')
+          .data(features)
+        .enter().append('path')
+          .attr('class', function(d) { console.log(); return 'municipality c' + d.properties.code })
+          .attr('d', path);
+
+      map.selectAll('text')
+          .data(features)
+        .enter().append("text")
+          .attr("transform", function(d) { return "translate(" + path.centroid(d) + ")"; })
+          .attr("dy", ".35em")
+          .attr("class", "municipality-label")
+          .text(function(d) { return d.properties.name; })
+    });
+
+//////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////
+      d3.csv("data/accident.csv", function(data) {
+        places.selectAll("circle")
+            .data(data)
+          .enter().append("circle")
+            .attr("cx", function(d) { return projection([d.x, d.y])[0]; })
+            .attr("cy", function(d) { return projection([d.x, d.y])[1]; })
+            .attr("r", function(d) {if (d.cnt > 4) {return 15}
+            else if (d.cnt >= 2) {return 9} else {return 4}})
+            .style("fill", function(d) {if (d.cnt > 4) {return "red"}
+            else if (d.cnt >= 2) {return "orange"} else {return "Yellow"}})
+
+        places.selectAll("text")
+            .data(data)
+          .enter().append("text")
+            .attr("x", function(d) { return projection([d.x, d.y])[0]; })
+            .attr("y", function(d) { return projection([d.x, d.y])[1] + 8; })
+            .text(function(d) { return d.cnt });
+
+
+    });
+
+
+    /*svg.call(d3.zoom().on("zoom", function () {
+      svg.attr("transform", d3.event.transform)
+    }));*/
+
+    </script>
+    <script>
+
+    var svg1 = d3.select("#map1").append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+    var map1 = svg1.append("g").attr("id", "map1"),
+        places1 = svg1.append("g").attr("id", "places1");
+
+
+
+    d3.json("data/seoul.json", function(error, data) {
+      var features = topojson.feature(data, data.objects.seoul_municipalities_geo).features;
+      map1.selectAll('path')
+          .data(features)
+        .enter().append('path')
+          .attr('class', function(d) { console.log(); return 'municipality c' + d.properties.code })
+          .attr('d', path)
+          .style("fill", "#efefef");;
+
+      map1.selectAll('text')
+          .data(features)
+        .enter().append("text")
+          .attr("transform", function(d) { return "translate(" + path.centroid(d) + ")"; })
+          .attr("dy", ".35em")
+          .attr("class", "municipality-label")
+          .text(function(d) { return d.properties.name; })
+    });
+
+//////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////
+      d3.csv("data/accident1.csv", function(data) {
+        places1.selectAll("circle")
+            .data(data)
+          .enter().append("circle")
+            .attr("cx", function(d) { return projection([d.x, d.y])[0]; })
+            .attr("cy", function(d) { return projection([d.x, d.y])[1]; })
+            .attr("r", function(d) {if (d.col1 == 0) {return 5} })
+            //.attr("r", function(d) {if (d.acc == 11 || d.law == 0) {return 5}
+          /*else {return "Yellow"}})*/
+          //.style("fill", function(d) {if (d.cnt > 4) {return "red"}
+        //  else if (d.cnt >= 2) {return "orange"} else {return "Yellow"}
+            .style("fill", function(d) {if (d.col1 == 0) {return "red"}
+
+          /*else {return "Yellow"}*/});
+
+        /*places1.selectAll("text")
+            .data(data)
+          .enter().append("text")
+            .attr("x", function(d) { return projection([d.x, d.y])[0]; })
+            .attr("y", function(d) { return projection([d.x, d.y])[1] + 8; })
+            .text(function(d) { if (d.cnt==2) return d.cnt });*/
+
+
+    });
+
+
+    /*svg.call(d3.zoom().on("zoom", function () {
+      svg.attr("transform", d3.event.transform)
+    }));*/
+
+    </script>
+  </body>
+</html>
